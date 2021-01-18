@@ -675,6 +675,9 @@ public class Syntacticor {
 				saveCode.addCode(CodeConversion.store64);
 			}
 		}
+		else {
+			returnExpr = new expr(TableItem.VOID,this.tokenDepth);
+		}
 		if(curToken == null || curToken.getType() != Token.SEMICOLON) {
 			throw new SyntacticorException("return stmt need ;");
 		}
@@ -805,7 +808,7 @@ public class Syntacticor {
 				||curToken.getType() == Token.CHAR_LITERAL
 				||curToken.getType() == Token.STRING_LITERAL) {
 			if(curToken.getType() == Token.UINT_LITERAL) {
-				long temp = (long)Integer.valueOf(curToken.getValue().toString());
+				long temp = (long)Long.valueOf(curToken.getValue().toString());
 				saveCode.addCode(CodeConversion.push(temp));
 			}
 			else if(curToken.getType() == Token.CHAR_LITERAL) {
