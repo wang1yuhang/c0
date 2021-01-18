@@ -12,8 +12,7 @@ import java.io.Writer;
  *
  */
 public class Main {
-	public static void main(String [] args) {
-		try {
+	public static void main(String [] args) throws Exception  {
 			Syntacticor syntacticor = Syntacticor.getInstance(args[0]);
 			syntacticor.analyzeProgram();
 //			syntacticor.getGlobalTable().print();
@@ -28,9 +27,5 @@ public class Main {
 	        }
 	        fileOutputStream.close();
 			
-		}
-		catch(Exception e) {
-			e.printStackTrace();
-		}
 	}
 }
