@@ -104,6 +104,9 @@ public class Syntacticor {
 		if(mainReturnType != TableItem.VOID) {
 			 startSave.addCode(CodeConversion.stackalloc(1));
 		}
+		else {
+			startSave.addCode(CodeConversion.stackalloc(0));
+		}
 		startSave.addCode(CodeConversion.call(this.getFunctionNum("main")));
 		this.allSave.addCodeFirst(startSave);
 		this.allSave.addCodeFirst(startSave.codeList.size(),4);
@@ -801,35 +804,14 @@ public class Syntacticor {
 				||curToken.getType() == Token.STRING_LITERAL) {
 			if(curToken.getType() == Token.UINT_LITERAL) {
 				long temp = (long)Integer.valueOf(curToken.getValue().toString());
-//				if(this.tokenDepth == 0) {
-//					saveCode.addCode(0, 8);
-//					saveCode.instructionNumOfThisPart++;
-//				}
-//				else {
-//					
-//				}
 				saveCode.addCode(CodeConversion.push(temp));
 			}
 			else if(curToken.getType() == Token.CHAR_LITERAL) {
 				long temp = (long)curToken.getValue().charAt(0);
-//				if(this.tokenDepth == 0) {
-//					saveCode.addCode(0, 8);
-//					saveCode.instructionNumOfThisPart++;
-//				}
-//				else {
-//					
-//				}
 				saveCode.addCode(CodeConversion.push(temp));
 			}
 			else if(curToken.getType() == Token.DOUBLE_LITERAL) {
 				double temp = Double.valueOf(curToken.getValue().toString());
-//				if(this.tokenDepth == 0) {
-//					saveCode.addCode(0, 8);
-//					saveCode.instructionNumOfThisPart++;
-//				}
-//				else {
-//					
-//				}
 				saveCode.addCode(CodeConversion.push(this.transDouble(temp)));
 			}
 			else if(curToken.getType() == Token.STRING_LITERAL) {
@@ -857,13 +839,25 @@ public class Syntacticor {
 		TableItem funcItem;
 		String funcName;
 		expr returnExpr;
+		SaveCode funcSave = new SaveCode();
 		boolean stdFlag = false;
 		if(curToken == null || curToken.getType() != Token.IDENT) {
 			throw new SyntacticorException("call expr error");
 		}
 		funcItem = this.globalTable.find(curToken.getValue().toString());
 		if(funcItem == null) {
-			funcItem = this.getStdFuncItem(curToken.getValue().toString(),saveCode);
+			funcItem = this.getStdFuncItem(curToken.getValue().toString(),funcSave);
+			if(funcItem == null || funcItem.returnType == TableItem.FAULT||funcItem.type != TableItem.FUNTION ) {
+				throw new SemanticException("no func name "+curToken.getValue().toString()+" exits");
+			}
+			funcName = funcItem.getName();
+			exprType = funcItem.returnType;
+			if(exprType == TableItem.INT || exprType == TableItem.DOUBLE) {
+				saveCode.addCode(CodeConversion.stackalloc(1));
+			}
+			else {
+				saveCode.addCode(CodeConversion.stackalloc(0));
+			}
 			returnExpr = new expr(funcItem.getName(),funcItem.returnType,0);
 			curToken = getToken();
 			//System.out.println(curToken.getValue()+"---"+curToken.getType());
@@ -880,6 +874,7 @@ public class Syntacticor {
 				throw new SyntacticorException("left expr need )");
 			}
 			curToken = getToken();
+			saveCode.addCode(funcSave);
 			//System.out.println(curToken.getValue()+"---"+curToken.getType());
 			return returnExpr;
 		}
