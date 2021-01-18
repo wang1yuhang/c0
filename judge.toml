@@ -1,4 +1,4 @@
 
 [jobs.c0]
 image = {source = "dockerfile", path = ".", tag = "rynco-c0"}
-run = ["ls src;cd src;java Main $input -o $asm"]
+run = ["ls src;cd src;cd c0;java Main $input -o $asm"]
