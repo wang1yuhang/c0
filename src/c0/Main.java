@@ -14,12 +14,12 @@ import java.io.Writer;
 public class Main {
 	public static void main(String [] args) {
 		try {
-			Syntacticor syntacticor = Syntacticor.getInstance("test.txt");
+			Syntacticor syntacticor = Syntacticor.getInstance(args[0]);
 			syntacticor.analyzeProgram();
 //			syntacticor.getGlobalTable().print();
 //			syntacticor.getLocalTable().print();
 			syntacticor.allSave.print();
-			File file = new File("result.txt");
+			File file = new File(args[2]);
 	        FileOutputStream fileOutputStream = new FileOutputStream(file);
 	        String code = syntacticor.allSave.toString();
 	        System.out.println("Code length: " + code.length());

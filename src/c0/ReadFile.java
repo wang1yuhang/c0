@@ -31,15 +31,8 @@ public class ReadFile {
 	}
 
 	public int readInt() throws IOException{
-//		ReadFile readFile = new ReadFile("text.txt");
-//		int charTemp = readFile.readInt();
-//		char c;
-//		while(charTemp!=-1) {
-//			c = (char)charTemp;
-//			System.out.println(c);
-//			charTemp = readFile.readInt();
-//		}
 		int charTemp = this.reader.read();
+		System.out.print((char)charTemp);
 		if(charTemp == -1) {
 			this.reader.close();
 		}
