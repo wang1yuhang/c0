@@ -1,11 +1,11 @@
 /**
  * 
  */
-package c0;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.Writer;
+
 
 /**
  * @author ftrww

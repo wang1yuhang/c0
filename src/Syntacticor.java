@@ -1,7 +1,6 @@
 /**
  * 
  */
-package c0;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -1209,7 +1208,7 @@ public class Syntacticor {
 	}
 	
 	public byte changeTokenTypeToTableType(byte type) {
-		if(type == Token.UINT_LITERAL||type == Token.CHAR_LITERAL) {
+		if(type == Token.UINT_LITERAL||type == Token.CHAR_LITERAL||type == Token.STRING_LITERAL ) {
 			return TableItem.INT;
 		}
 		else if(type == Token.DOUBLE_LITERAL) {

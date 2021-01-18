@@ -1,8 +1,6 @@
 /**
  * 
  */
-package c0;
-
 /**
  * @author ftrww
  *
