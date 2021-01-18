@@ -112,7 +112,7 @@ public class SymbolTable {
 	}
 	
 	public TableItem find(String name) {
-		for(int i=0 ;i<this.tableList.size();i++) {
+		for(int i=this.tableList.size()-1 ;i>=0;i--) {
 			if(tableList.get(i).getName().equals(name)) {
 				return tableList.get(i);
 			}

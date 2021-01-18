@@ -220,7 +220,7 @@ public class Tokenizer {
 				token.getValue().append(c);
 				charTemp = readFile.readInt();
 				c = (char) charTemp;
-				if (!Character.isDigit(c)) {
+				if (!Character.isDigit(c)&&c!='-'&&c!='+') {
 					throw new TokenizerException("this is an error after double number with E");
 				}
 			}
@@ -276,6 +276,7 @@ public class Tokenizer {
 		if(c != '\'') {
 			throw new TokenizerException("Bad char end");
 		}
+		token.setType(Token.CHAR_LITERAL);
 		tokenList.add(token);
 		return charTemp;
 	}

@@ -2,6 +2,7 @@
  * 
  */
 
+import java.awt.print.Printable;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
@@ -120,6 +121,7 @@ public class Syntacticor {
 				num++;
 			}
 		}
+		this.globalTable.print();
 		this.allSave.addCodeFirst(num,4);
 		for(int i=0;i<this.globalTable.getTableList().size();i++) {
 			TableItem sti = this.globalTable.getTableList().get(i);
@@ -237,13 +239,7 @@ public class Syntacticor {
 		}
 		exprTemp = analyzeBlockStmt(funcSave,true);
 		
-		
-		if(exprTemp == null) {
-			if(returnType != TableItem.VOID) {
-				throw new SemanticException("the return type is void but the block do not return this ");
-			}
-		}
-		else if(exprTemp.type != returnType){
+		if(exprTemp != null && exprTemp.type != returnType){
 			throw new SemanticException("the type of the block return can not match the required return type");
 		}
 		//添加指令数量
@@ -387,10 +383,8 @@ public class Syntacticor {
 		if(curToken == null || curToken.getType() != Token.SEMICOLON) {
 			throw new SyntacticorException("letDeclStmt need semicolon");
 		}
-		if(isInFuncBlock) {
-			saveCode.variableSlot += this.typeToSlot(type);
-			saveCode.variableNum += 1;
-		}
+		saveCode.variableSlot += this.typeToSlot(type);
+		saveCode.variableNum += 1;
 		currentTable.addItem(declItem);
 		curToken = getToken();
 		//System.out.println(curToken.getValue()+"---"+curToken.getType());
@@ -458,10 +452,8 @@ public class Syntacticor {
 		saveCode.addCode(exprSave);
 		saveCode.addCode(CodeConversion.store64);
 		declItem.setConst();
-		if(isInFuncBlock) {
-			saveCode.variableSlot += this.typeToSlot(type);
-			saveCode.variableNum += 1;
-		}
+		saveCode.variableSlot += this.typeToSlot(type);
+		saveCode.variableNum += 1;
 		currentTable.addItem(declItem);
 		saveCode.variableNum = saveCode.variableNum + 1;
 		curToken = getToken();
@@ -472,10 +464,10 @@ public class Syntacticor {
 		expr returnExpr = null;
 		this.tokenDepth = this.tokenDepth + 1;
 		//System.out.println("the depth is "+ this.tokenDepth);
-		if(isInFunction== true) {
-			saveCode.variableNum = 0;
-			saveCode.variableSlot = 0;
-		}
+//		if(isInFunction== true) {
+//			saveCode.variableNum = 0;
+//			saveCode.variableSlot = 0;
+//		}
 		SymbolTable currentTable = this.getCurrentTable();
 		if(curToken == null || curToken.getType() != Token.L_BRACE) {
 			throw new SyntacticorException("BlockStmt need {");
@@ -602,6 +594,7 @@ public class Syntacticor {
 			count += elseSaveCode.codeList.size();
 			saveCode.addCode(CodeConversion.br(count));
 		}
+		saveCode.addCode(elseSaveCode);
 		return null;
 	}
 	
@@ -611,18 +604,22 @@ public class Syntacticor {
 		}
 		SaveCode compareSaveCode = new SaveCode();
 		SaveCode blockSaveCode = new SaveCode();
+		blockSaveCode.variableNum = saveCode.variableNum;
+		blockSaveCode.variableSlot = saveCode.variableSlot;
 		curToken = getToken();
 		//System.out.println(curToken.getValue()+"---"+curToken.getType());
 		analyzeExpr(compareSaveCode);
 		analyzeBlockStmt(blockSaveCode,false);
+		saveCode.addCode(CodeConversion.whileStartFlag);
 		saveCode.addCode(CodeConversion.nop);
 		saveCode.addCode(compareSaveCode);
 		saveCode.addCode(CodeConversion.brtrue(1));
 		saveCode.addCode(CodeConversion.br(blockSaveCode.codeList.size()+1));
 		saveCode.addCode(blockSaveCode);
 		saveCode.addCode(CodeConversion.br(-(compareSaveCode.codeList.size()+3+blockSaveCode.codeList.size())));
-		saveCode.addCodeFirst(CodeConversion.whileStartFlag);
 		saveCode.addCode(CodeConversion.whileEndFlag);
+		saveCode.variableNum = blockSaveCode.variableNum;
+		saveCode.variableSlot = blockSaveCode.variableSlot;
 		
 		return null;
 	}
@@ -736,6 +733,7 @@ public class Syntacticor {
 					}
 				}
 				else {
+					currentTable.print();
 					item = currentTable.find(tokenTemp.getValue().toString());
 					if(item == null) {
 						if(currentTable == this.localTable) {
@@ -749,15 +747,17 @@ public class Syntacticor {
 						}
 					}
 					else {
-						if(item.isParam) {
-							saveCode.addCode(CodeConversion.arga(item.location+this.paramOffset));
-						}
-						else if(currentTable == this.localTable){
-							//System.out.println("loc4");
-							saveCode.addCode(CodeConversion.loca(item.location));
-						}
-						else {
-							saveCode.addCode(CodeConversion.globa(item.location));
+						if(curToken != null && curToken.getType() != Token.ASSIGN) {
+							if(item.isParam) {
+								saveCode.addCode(CodeConversion.arga(item.location+this.paramOffset));
+							}
+							else if(currentTable == this.localTable){
+								//System.out.println("loc4");
+								saveCode.addCode(CodeConversion.loca(item.location));
+							}
+							else {
+								saveCode.addCode(CodeConversion.globa(item.location));
+							}
 						}
 					}
 					if(item.isConst) {
@@ -769,7 +769,9 @@ public class Syntacticor {
 					if(constFlag == true) {
 						returnExpr.setConst();
 					}
-					saveCode.addCode(CodeConversion.load64);
+					if(curToken != null && curToken.getType() != Token.ASSIGN) {
+						saveCode.addCode(CodeConversion.load64);
+					}
 				}
 			}
 			
@@ -815,7 +817,7 @@ public class Syntacticor {
 				saveCode.addCode(CodeConversion.push(this.transDouble(temp)));
 			}
 			else if(curToken.getType() == Token.STRING_LITERAL) {
-				TableItem StringItem = new TableItem("STRING",TableItem.STRING,0);
+				TableItem StringItem = new TableItem("STRING"+String.valueOf(this.globalTable.getTableList().size()),TableItem.STRING,0);
 				StringItem.location = this.globalTable.getTableList().size();
 				StringItem.StringValue = curToken.getValue().toString();
 				StringItem.setConst();
@@ -852,12 +854,12 @@ public class Syntacticor {
 			}
 			funcName = funcItem.getName();
 			exprType = funcItem.returnType;
-			if(exprType == TableItem.INT || exprType == TableItem.DOUBLE) {
-				saveCode.addCode(CodeConversion.stackalloc(1));
-			}
-			else {
-				saveCode.addCode(CodeConversion.stackalloc(0));
-			}
+//			if(exprType == TableItem.INT || exprType == TableItem.DOUBLE) {
+//				saveCode.addCode(CodeConversion.stackalloc(1));
+//			}
+//			else {
+//				saveCode.addCode(CodeConversion.stackalloc(0));
+//			}
 			returnExpr = new expr(funcItem.getName(),funcItem.returnType,0);
 			curToken = getToken();
 			//System.out.println(curToken.getValue()+"---"+curToken.getType());
