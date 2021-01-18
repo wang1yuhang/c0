@@ -13,20 +13,10 @@ import java.util.LinkedList;
 public class SaveCode {
 
 	public LinkedList<String> codeList;
-	private StringBuilder code;
 	public int variableSlot = 0;
 	public int variableNum = 0;
 	public SaveCode() {
-		this.code = new StringBuilder();
 		this.codeList = new LinkedList<String>();
-	}
-	
-	public String toString() {
-		StringBuilder code = new StringBuilder();
-		for(int i = 0; i < this.codeList.size(); i++) {
-			code.append(this.codeList.get(i));
-		}
-		return code.toString();
 	}
 	
 	public void addCode(String s) {
